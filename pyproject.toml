@@ -1,0 +1,26 @@
+[project]
+name = "fast-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flet>=0.28.3",
+    "flet-desktop>=0.28.3",
+    "langchain-mcp-adapters>=0.1.9",
+    "langchain-mcp>=0.2.1",
+    "langchain-ollama>=0.3.7",
+    "langchain>=0.3.27",
+    "langgraph>=0.6.6",
+    "mcp>=1.11.0",
+    "flet-web>=0.28.3",
+    "paramiko>=4.0.0",
+]
+
+[tool.uv.workspace]
+members = ["mcp"]
+
+[dependency-groups]
+dev = [
+    "flet[all]>=0.28.3",
+]

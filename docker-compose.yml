@@ -1,0 +1,42 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "127.0.0.1:11434:11434" # または "0.0.0.0:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # GPUを使用する場合 (NVIDIAの場合) - 必要に応じてコメント解除
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fast_mcp_app
+    working_dir: /app
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - .:/app:delegated            # ローカルソース
+      - uv_cache:/root/.cache/uv    # uv キャッシュ
+    # /opt/venv はイメージ内で作成済み。ボリュームで上書きしない。
+    # 初回起動で万一 /opt/venv が空の場合のみ uv sync を実行し、その後アプリを実行。
+    command: ["sh", "-c", "[ -x /opt/venv/bin/python ] || uv sync; python hello.py; tail -f /dev/null"]
+    # 例: API を公開したい場合
+    # ports:
+    #   - "8000:8000"
+    depends_on:
+      - ollama
+    restart: no
+
+volumes:
+  ollama_data:
+  uv_cache:
