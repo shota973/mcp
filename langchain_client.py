@@ -9,28 +9,24 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_ollama import ChatOllama
 from langgraph.prebuilt import create_react_agent
 
+# model.py で定義したCONFIG_PATHの内容を取得
 def load_json_config(path=model.CONFIG_PATH):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-mcp_setting_config = load_json_config().get("mcpServers", {})
-print(mcp_setting_config)
-
+# ReAct agentからの返答を出力
 def print_messages(result) -> list[list[str]]:
-    print("\n=== Result ===\n")
-    print(result)
     messages = result.get("messages", result)
     if not isinstance(messages, list):
         print("messagesがリストではありません")
         return [["error", ""]]
-    print("\n=== Messages ===\n")
-    print(messages)
-    results = []
+
     for msg in messages:
         message = ""
         msg_type = msg.get("type") if isinstance(msg, dict) else type(msg).__name__
         if not msg_type and hasattr(msg, "__class__"):
             msg_type = msg.__class__.__name__
+
         print(f"\n=== START {msg_type} ===")
         if isinstance(msg, dict):
             print("{")
@@ -39,9 +35,9 @@ def print_messages(result) -> list[list[str]]:
                 if not is_first_value:
                     print(",")
                 print(f"{k}: {v}")
-                message += f"{k}: {v}\n"
                 is_first_value = False
             print("}")
+
         else:
             keys = vars(msg).keys()
             if "name" in keys and msg.name != None and msg.name != "":
@@ -52,13 +48,10 @@ def print_messages(result) -> list[list[str]]:
                 tool_messages = list(map(lambda x: f"{x['name']} {x['args']}", msg.tool_calls))
                 print("\n".join(tool_messages))
                 
-            message += str(msg) + "\n"
-        results.append([msg_type, message])
         print(f"=== END {msg_type} ===")
 
-    return results
-
-async def create_client():
+# clientやReAct agentの作成
+async def create_client(mcp_setting_config):
     llm = ChatOllama(
         model = model.CHAT_MODEL,
         temperature = 0,
@@ -74,6 +67,7 @@ async def create_client():
     agent = create_react_agent(llm, tools, prompt=sys_message)
     return agent
 
+# agentを用いてmessageを送信して返答をprint
 async def send_message(agent, message: str) -> list[list[str]]:
     # ReAct エージェントは messages の履歴形式を期待
     result = await agent.ainvoke({"messages": [("human", message)]})
@@ -81,12 +75,19 @@ async def send_message(agent, message: str) -> list[list[str]]:
     return results
 
 async def main():
+    # mcp_setting.jsonの読み込み
+    mcp_setting_config = load_json_config().get("mcpServers", {})
+    print(mcp_setting_config)
+
+    # コマンドライン引数がある場合は送信するプロンプトを設定（存在しない場合は「こんにちは」を送信）
     prompt = "こんにちは"
     args = sys.argv
     if len(args) >= 2:
         prompt = " ".join(args[1:])
-        
-    agent = await create_client()
+    
+    # mcpクライアント、mcpホストの作成
+    agent = await create_client(mcp_setting_config)
+    # promptを送信、メッセージのprint
     await send_message(agent, prompt)
 
 if __name__ == "__main__":
