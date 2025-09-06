@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/app/filesystem"
+      ]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "transport": "stdio"
+    },
+    "My MCP": {
+      "transport": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}
