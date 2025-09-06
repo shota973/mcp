@@ -7,13 +7,13 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     # GPUを使用する場合 (NVIDIAの場合) - 必要に応じてコメント解除
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     restart: always
 
   app:
