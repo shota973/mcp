@@ -1,5 +1,6 @@
 import flet as ft
 import time
+import datetime
 import model
 import paramiko
 import ssh_config
@@ -62,6 +63,8 @@ class ChatMessage(ft.Row):
 async def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
     page.title = "AI Chat"
+
+    window_name = ft.Text(datetime.datetime.now().strftime("%Y/%m/%d-%H:%M:%S"))
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -96,7 +99,7 @@ async def main(page: ft.Page):
             )
             # appコンテナのbashを開き、ユーザーの入力を付加してhost.pyを実行
             stdin, stdout, stderr = ssh.exec_command(ssh_config.enter_app_cmd, get_pty=True)
-            stdin.write(ssh_config.run_app_cmd(send_prompt))
+            stdin.write(ssh_config.run_app_cmd(window_name.value, send_prompt))
             stdin.close()
                 
             chat.controls.remove(loading_message)
@@ -211,6 +214,7 @@ async def main(page: ft.Page):
 
     # 各要素からページを作成
     page.add(
+        window_name,
         ft.Container(
             content=chat,
             border=ft.border.all(1, ft.Colors.OUTLINE),
