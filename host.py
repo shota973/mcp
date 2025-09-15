@@ -39,9 +39,8 @@ async def send_message(agent, window: str, message: str) -> list[dict[str, str]]
     if window != "" and os.path.isfile(cache_file):
         with open(cache_file, "r", encoding="utf-8") as f:
             message_history = json.load(f)
-            message_history.append({"role": "user", "content": message})
-    else:
-        message_history = [{"role": "user", "content": message}]
+    
+    message_history.append({"role": "user", "content": message})
 
     # ReAct エージェントは messages の履歴形式を期待
     result = await agent.ainvoke({"messages": message_history})
