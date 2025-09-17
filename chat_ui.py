@@ -172,7 +172,7 @@ async def main(page: ft.Page):
         close_popup.open = False
         page.update()
 
-    # window名を日付で設定
+    # 同じsessionを使用するためにsession名としてwindowを作成した日時を設定
     window_date = ft.Text(datetime.datetime.now().strftime("%Y/%m/%d-%H:%M:%S"))
 
     # メッセージ一覧を表示する要素
